@@ -1,0 +1,30 @@
+{
+  "name": "react-pick-calendar",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./lib/PickCalendar.js",
+  "keywords": [],
+  "author": "skripnn",
+  "license": "MIT",
+  "scripts": {
+    "build": "webpack"
+  },
+  "peerDependencies": {
+    "prop-types": "^15.7.2",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.10",
+    "@babel/preset-env": "^7.11.0",
+    "@babel/preset-react": "^7.10.4",
+    "babel-loader": "^8.2.2",
+    "css-loader": "^5.0.1",
+    "prop-types": "^15.7.2",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
+    "style-loader": "^2.0.0",
+    "webpack": "^5.11.0",
+    "webpack-cli": "^4.2.0"
+  }
+}
