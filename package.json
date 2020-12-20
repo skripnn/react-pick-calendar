@@ -6,6 +6,7 @@
   "keywords": [],
   "author": "skripnn",
   "license": "MIT",
+  "repository": "git://github.com/skripnn/react-pick-clendar.git",
   "scripts": {
     "build": "webpack"
   },
