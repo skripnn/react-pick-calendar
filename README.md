@@ -6,8 +6,6 @@ A scrollable calendar with no division into months for React App.
 
 Allows you to select dates and view information about dates
 
-[![ezgif-com-crop.gif](https://i.postimg.cc/R0W1ZYDD/ezgif-com-crop.gif)](https://postimg.cc/XZ0B2s3f)
-
 ## install and import
 
 Install by executing `npm install react-calendar`
