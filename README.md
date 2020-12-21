@@ -8,7 +8,7 @@ Allows you to select dates and view information about dates
 
 ## install and import
 
-Install by executing `npm install react-calendar`
+Install by executing `npm i react-pick-calendar`
 
 Import by adding `import Calendar from 'react-pick-calendar';` 
 
