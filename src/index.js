@@ -1,3 +1,3 @@
-import PickCalendar from "./components/PickCalendar";
+import Calendar from "./components/Calendar";
 
-export default PickCalendar
+export default Calendar

@@ -5,7 +5,7 @@ module.exports = {
   entry: './src/index.js',
   output: {
     path: path.resolve('lib'),
-    filename: 'PickCalendar.js',
+    filename: 'Calendar.js',
     libraryTarget: 'commonjs2'
   },
   module: {

@@ -1,25 +1,40 @@
-# react-pick-calendar
+[![npm](https://img.shields.io/npm/v/react-pick-calendar.svg)](https://www.npmjs.com/package/react-pick-calendar)
 
-React календарь для наглядного отображения и редактирования занятых дней независимо от месяцев
+# react-scroll-calendar
+
+A scrollable calendar with no division into months for React App.
+
+Allows you to select dates and view information about dates
+
+[![ezgif-com-crop.gif](https://i.postimg.cc/R0W1ZYDD/ezgif-com-crop.gif)](https://postimg.cc/XZ0B2s3f)
+
+## install and import
+
+Install by executing `npm install react-calendar`
+
+Import by adding `import Calendar from 'react-pick-calendar';` 
+
+Use by adding `<Calendar/>`
+    
 
 ## terms
 
-**`fDate`** - строковое представление даты формата YYYY-MM-DD
+**`fDate`** - date string in YYYY-MM-DD format
 
-**`busy`** - цвет занятого дня *(красный)*
+**`busy`** - busy day color *(red)*
 
-**`pick`** - цвет выделенного дня *(зеленый)*
+**`pick`** - picked day color *(зеленый)*
 
-**`days`** - `занятые дни с информацией` - объект, со свойствами формата `fDate`: `Any`
-* ###### *каждое свойство меняет цвет дня на `busy`*
+**`days`** - Object containing properties `fDate` and `Any` values
+* ###### *day become `busy`*
 
-**`daysOff`** - `занятые дни` - список с `fDate`
-* ###### *меняет цвет дня на `busy`*
+**`daysOff`** - Array containing `fDate`
+* ###### *day become `busy`*
 
-**`daysPick`** - `отмеченные дни` - список с `fDate`
-* ###### *меняет цвет дня на `pick`*
+**`daysPick`** - Array containing `fDate`
+* ###### *day become `pick`*
 
-**`PickCalendar object`** - Объект, в котором ожидаются свойства: `days`, `daysOff`, `daysPick`
+**`Calendar object`** - Object, the expected properties: `days`, `daysOff`, `daysPick`
     
     CalendarObject = {
         days: {
@@ -35,16 +50,13 @@ React календарь для наглядного отображения и �
 
 | name | type | default | description |
 | ------------- | ----------- | ----------- | ----------- |
-| `edit` | bool | *false* | *true* позволяет редактировать `daysPick`|
-| `offset` | bool | *true* | *true* отображает календарь с первой даты в `daysPick`, при наличии|
-| `init` | obj |  | `PickCalendar object`. Позволяет предустановить или обновить контент. При обновлении каждое свойство заменяет уже существующее внутри компонента|
-| `get` | func |  | Асинхронная функция для получения контента с бэкенда. Должна возвращать `PickCalendar object` в JSON|
-| `onChange` | func |  | Функция, получающая `daysPick` при изменении|
-| `dayOver` | func |  | Функция, получающая информацию из дня при наведении на него|
-| `startDate` | str |  | `fDate`, левая граница календаря|
-| `endDate` | str |  | `fDate`, правая граница календаря|
+| `edit` | bool | *false* | *true* allow to edit `daysPick`|
+| `offset` | bool | *true* | *true* displays the calendar from the first date in `daysPick`, if exist|
+| `init` | obj |  | `Calendar object`. Allows you to initialize or update the content. When the property is updated, it replaces the existing one inside the component|
+| `get` | func |  | Lazy loading async function that to receives a content from the backend. Gets the start `fDate` and the end `fDate`. Should return a JSON-serialized `Calendar object`|
+| `onChange` | func |  | A function that receives a changed `daysPick`|
+| `dayOver` | func |  | A function that receives information from the day when you hover over it|
+| `startDate` | str |  | `fDate`, the calendar left edge|
+| `endDate` | str |  | `fDate`, the calendar right edge|
 
-## API
-
-    import PickCalendar from 'react-pick-calendar';
 

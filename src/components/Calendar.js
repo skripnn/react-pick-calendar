@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 
 import {propTypes, defaultProps} from '../extention/propTypes'
-import '../extention/PickCalendar.css'
+import '../extention/Calendar.css'
 import "../extention/date"
 import {getMonth, newDate} from "../extention/date";
 import sortSet from "../extention/sortSet";
@@ -33,7 +33,7 @@ let tch = {
 let loading = true
 
 
-function PickCalendar (props) {
+function Calendar (props) {
   // React.component - Календарь
   const ref = React.createRef()
 
@@ -358,6 +358,6 @@ function PickCalendar (props) {
   }
 
 
-PickCalendar.propTypes = propTypes
-PickCalendar.defaultProps = defaultProps
-export default PickCalendar
+Calendar.propTypes = propTypes
+Calendar.defaultProps = defaultProps
+export default Calendar

@@ -2,7 +2,7 @@
   "name": "react-pick-calendar",
   "version": "1.0.0",
   "description": "",
-  "main": "./lib/PickCalendar.js",
+  "main": "./lib/Calendar.js",
   "keywords": [],
   "author": "skripnn",
   "license": "MIT",
