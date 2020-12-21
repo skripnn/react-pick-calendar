@@ -24,13 +24,13 @@ Use by adding `<Calendar/>`
 **`pick`** - picked day color *(зеленый)*
 
 **`days`** - Object containing properties `fDate` and `Any` values
-* ###### *day become `busy`*
+###### *day become `busy`*
 
 **`daysOff`** - Array containing `fDate`
-* ###### *day become `busy`*
+###### *day become `busy`*
 
 **`daysPick`** - Array containing `fDate`
-* ###### *day become `pick`*
+###### *day become `pick`*
 
 **`Calendar object`** - Object, the expected properties: `days`, `daysOff`, `daysPick`
     
