@@ -93,7 +93,7 @@ function Calendar (props) {
     let marginLeft = 0
 
     // если offset = True - старт на первый отмеченный день
-    if (startOffset && content.daysPick.size > 0) start = newDate([...content.daysPick][0])
+    if (startOffset && content.daysPick.size > 0) start = newDate([...content.daysPick][0].monday())
 
     // если старт раньше левой границы календаря
     if (startDate && start < startDate) start = startDate
@@ -247,6 +247,7 @@ function Calendar (props) {
     if (!props.edit) return
     let set = new Set(content.daysPick)
     set.has(dateStr)? set.delete(dateStr) : set.add(dateStr)
+    set = sortSet(set)
     setContent(
       {
         days: content.days,
