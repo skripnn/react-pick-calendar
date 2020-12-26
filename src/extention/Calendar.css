@@ -5,16 +5,14 @@ div.calendar-block {
     padding-top: 10px;
     padding-bottom: 20px;
     overflow: hidden;
-    width: 100%;
 }
-div.calendar-block.shadow {
+div.calendar-block.hidden {
     opacity: 0;
 }
 div.calendar-right {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    /*max-width: 1248px;*/
     width: 100%;
 }
 div.calendar-left {
@@ -70,16 +68,25 @@ span.calendar-text {
     align-items: center;
     justify-content: center;
 }
+div.calendar-scroll {
+    width: 100%;
+    overflow-x: scroll;
+}
+div.calendar-scroll::-webkit-scrollbar {
+    display: none;
+}
 div.calendar-days {
     display: flex;
     flex-direction: row;
-    overflow: hidden;
+    flex-wrap: nowrap;
+    overflow-x: hidden;
     border: 1px solid rgba(255,255,255,0);
     border-top-right-radius: 6px;
     border-bottom-right-radius: 6px;
     -ms-overflow-style: none;
+    width: max-content;
 }
-div.calendar-days::-webkit-scrollbar {
+div.calendar-right::-webkit-scrollbar {
     display: none;
 }
 div.calendar-week {
@@ -104,7 +111,18 @@ div.calendar-day {
     -ms-user-select: none;
     user-select: none;
 }
-div.calendar-day.hover {
+div.calendar-day.hidden {
+    cursor: inherit;
+}
+div.calendar-day.hidden:hover {
+    min-width: 22px;
+    min-height: 22px;
+    width: 22px;
+    height: 22px;
+    border: unset;
+    border-radius: unset;
+}
+div.calendar-day:hover {
     min-width: 20px;
     min-height: 20px;
     width: 20px;

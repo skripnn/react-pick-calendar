@@ -24,13 +24,13 @@ Use by adding `<Calendar/>`
 **`pick`** - picked day color *(зеленый)*
 
 **`days`** - Object containing properties `fDate` and `Any` values
-###### *day become `busy`*
+###### *day becomes `busy`*
 
 **`daysOff`** - Array containing `fDate`
-###### *day become `busy`*
+###### *day becomes `busy`*
 
 **`daysPick`** - Array containing `fDate`
-###### *day become `pick`*
+###### *day becomes `pick`*
 
 **`Calendar object`** - Object, the expected properties: `days`, `daysOff`, `daysPick`
     
@@ -54,7 +54,7 @@ Use by adding `<Calendar/>`
 | `get` | func |  | Lazy loading async function that to receives a content from the backend. Gets the start `fDate` and the end `fDate`. Should return a JSON-serialized `Calendar object`|
 | `onChange` | func |  | A function that receives a changed `daysPick`|
 | `dayOver` | func |  | A function that receives information from the day when you hover over it|
-| `startDate` | str |  | `fDate`, the calendar left edge|
-| `endDate` | str |  | `fDate`, the calendar right edge|
+| `startDate` | str |  | `fDate`, the calendar first date. Otherwise infinite scrolling to past|
+| `endDate` | str |  | `fDate`, the calendar last date. Otherwise infinite scrolling to future|
 
 

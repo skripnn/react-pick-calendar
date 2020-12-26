@@ -19,7 +19,7 @@ function Day(props) {
   }
 
   function onMouseOver() {
-    props.onMouseOver(props.info, props.date)
+    if (props.onMouseOver) props.onMouseOver(props.info, props.date)
   }
 
   return (
