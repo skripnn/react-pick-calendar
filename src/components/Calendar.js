@@ -80,7 +80,8 @@ function Calendar (props) {
     if (prevWeeks) start = newDate(prevWeeks[0].key)
 
     let leftDate = newDate(start)
-    if (ref.current.scrollLeft === 0) leftDate.offsetWeeks(-weeksOffset)  // влево
+    if (!prevWeeks) leftDate.offsetWeeks(-weeksOffset)
+    else if (ref.current.scrollLeft === 0) leftDate.offsetWeeks(-weeksOffset)  // влево
     else if (ref.current.scrollLeft >= scrollOffset * 2) leftDate.offsetWeeks(weeksOffset)  // или вправо
 
     // 3 - обрабатывыаем новую стартовую дату
@@ -116,7 +117,8 @@ function Calendar (props) {
     }
 
     // 6 - скроллим блок и возвращаем новые недели
-    ref.current.scrollLeft += scrollLeft
+    if (prevWeeks) scrollLeft += ref.current.scrollLeft
+    ref.current.scrollLeft = scrollLeft
     return weeks
   }
 
