@@ -79,15 +79,14 @@ function Calendar (props) {
     if (startOffset && content.daysPick.size > 0) start = newDate([...content.daysPick][0]).monday()
     if (prevWeeks) start = newDate(prevWeeks[0].key)
 
-    // 2 - сдвигаем стартовую дату
     let leftDate = newDate(start)
     if (ref.current.scrollLeft === 0) leftDate.offsetWeeks(-weeksOffset)  // влево
-    else if (ref.current.scrollLeft >= scrollOffset * 2) leftDate.offsetWeeks(weeksCount)  // или вправо
+    else if (ref.current.scrollLeft >= scrollOffset * 2) leftDate.offsetWeeks(weeksOffset)  // или вправо
 
     // 3 - обрабатывыаем новую стартовую дату
     if (startDate && leftDate < startDate) leftDate = newDate(startDate)  // если стартовая дата раньше левой границы - сдвигаем стартовую дату до границы
-    let scrollLeft = weekWidth(start.getDiffWeeks(leftDate))  // вычисляем значение скролла
-    if (start < leftDate) scrollLeft = 0
+    let scrollLeft = weekWidth(start.getDiffWeeks(leftDate))
+    if (!prevWeeks && start < leftDate) scrollLeft = 0
     weeksCount += weeksOffset * 2 // увеличиваем длину каленадря
 
     // 4 - обработчик наличия правой границы
@@ -117,7 +116,7 @@ function Calendar (props) {
     }
 
     // 6 - скроллим блок и возвращаем новые недели
-    ref.current.scrollLeft = scrollLeft
+    ref.current.scrollLeft += scrollLeft
     return weeks
   }
 
