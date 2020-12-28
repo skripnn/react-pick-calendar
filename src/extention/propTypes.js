@@ -2,10 +2,7 @@ import PropTypes from "prop-types";
 
 export const propTypes = {
   // функция для получения значений - return Calendar Object
-  get: PropTypes.shape({
-    then: PropTypes.func.isRequired,
-    catch: PropTypes.func.isRequired
-  }),
+  get: PropTypes.func,
   // функция для записи изменений (что делать с daysPick при изменении)
   onChange: PropTypes.func,
   // можно ли менять daysPick
