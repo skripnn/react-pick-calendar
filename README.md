@@ -1,7 +1,3 @@
-[![npm](https://img.shields.io/npm/v/react-pick-calendar.svg)](https://www.npmjs.com/package/react-pick-calendar)
-
-# react-pick-calendar
-
 A scrollable calendar with no division into months for React App.
 
 Allows you to select dates and view information about dates
@@ -21,7 +17,7 @@ Use by adding `<Calendar/>`
 
 **`busy`** - busy day color *(red)*
 
-**`pick`** - picked day color *(зеленый)*
+**`pick`** - picked day color *(green)*
 
 **`days`** - Object containing properties `fDate` and `Any` values
 ###### *day becomes `busy`*
@@ -51,7 +47,7 @@ Use by adding `<Calendar/>`
 | `edit` | bool | *false* | *true* allow to edit `daysPick`|
 | `offset` | bool | *true* | *true* displays the calendar from the first date in `daysPick`, if exist|
 | `init` | obj |  | `Calendar object`. Allows you to initialize or update the content. When the property is updated, it replaces the existing one inside the component|
-| `get` | func |  | Lazy loading async function that to receives a content from the backend. Gets the start `fDate` and the end `fDate`. Should return a JSON-serialized `Calendar object`|
+| `get` | func |  | Lazy loading async function that to receives a content from the backend. It gets the Date objects - start and end. Should return a `Calendar object`|
 | `onChange` | func |  | A function that receives a changed `daysPick`|
 | `dayOver` | func |  | A function that receives information from the day when you hover over it|
 | `startDate` | str |  | `fDate`, the calendar first date. Otherwise infinite scrolling to past|

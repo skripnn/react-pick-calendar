@@ -6,6 +6,7 @@ import "../extention/date"
 import {getMonth, newDate} from "../extention/date";
 import sortSet from "../extention/sortSet";
 import weeksCounter from "../extention/weeksCounter";
+import weekWidth from "../extention/weekWidth";
 import { DeltaTouchX } from "../extention/deltaTouch";
 
 import ButtonScroll from "./ButtonScroll";
@@ -19,7 +20,6 @@ import Day from "./Day";
 
 let getTimeOut
 let loading = true
-const weekWidth = (n=1) => n * 24
 const weeksOffset = 15
 const scrollOffset = weekWidth(weeksOffset)
 
@@ -37,10 +37,12 @@ function Calendar (props) {
   const [weeks, setWeeks] = useState([<span style={{width: window.innerWidth + scrollOffset}} key={'temp'}/>])
   const [texts, setTexts] = useState({})
 
+  // eslint-disable-next-line
   useEffect(firstRender, [])
+  // eslint-disable-next-line
   useEffect(refresh, [content])
-  useEffect(get, [weeks])
-  useEffect(fromPropsToInit, [props])
+  // eslint-disable-next-line
+  useEffect(fromProps, [props])
 
   function firstRender() {
     ref.current.addEventListener('wheel', e => wheelScroll(e), {passive: false})
@@ -51,12 +53,13 @@ function Calendar (props) {
     window.onresize = () => refresh()
 
     const newWeeks = getWeeks()
+    get(newWeeks, 0)
     setTexts(getTexts(newWeeks))
     setWeeks(newWeeks)
     loading = false
   }
 
-  function fromPropsToInit() {
+  function fromProps() {
     // запись props.init в init
     if (props.init !== init) {
       setInit(props.init)
@@ -66,6 +69,10 @@ function Calendar (props) {
         daysPick: props.init.daysPick? sortSet(props.init.daysPick) : content.daysPick
       })
     }
+    if (props.offset !== startOffset) {
+      setStartOffset(props.offset)
+    }
+    refresh()
   }
 
   function getWeeks(prevWeeks) {
@@ -227,43 +234,37 @@ function Calendar (props) {
     let set = new Set(content.daysPick)
     set.has(dateStr)? set.delete(dateStr) : set.add(dateStr)
     set = sortSet(set)
-    setContent(
-      {
-        days: content.days,
-        daysOff: content.daysOff,
-        daysPick: set
-      }
-    )
+    setContent(prevState => ({...prevState, daysPick: set}))
     props.onChange([...set])
   }
 
-  function get() {
+  function get(weeks, timeout=500) {
     // GET
     if (props.get) {
       clearTimeout(getTimeOut)
       const start = newDate(weeks[0].key)
       const end = newDate(start).offsetWeeks(weeks.length).offsetDays(-1)
       getTimeOut = setTimeout(() => {
-        props.get(start, end).then(r => r.json()).then(result => {
+        props.get(start, end).then(result => {
           setContent({
             days: result.days ? {...content.days, ...result.days} : content.days,
             daysOff: result.daysOff ? sortSet([...content.daysOff, ...result.daysOff]) : content.daysOff,
             daysPick: result.daysPick ? sortSet([...content.daysPick, ...result.daysPick]) : content.daysPick
           })
         })
-      }, 1000)
+      }, timeout)
     }
   }
 
   function reset() {
     // reset state
-    setWeeks(getWeeks())
+    newWeeks()
     if (props.offset) setStartOffset(!startOffset)
   }
 
   function refresh() {
     // обновление недель
-    setWeeks(prevWeeks => setWeeks(prevWeeks))
+    setWeeks(prevWeeks => getWeeks(prevWeeks))
   }
 
   function wheelScroll(e) {
@@ -282,11 +283,15 @@ function Calendar (props) {
     // реакция на скролл
     setTexts(getTexts())
     if (ref.current.scrollLeft === 0 || ref.current.scrollLeft >= scrollOffset * 2) {
-      const newWeeks = getWeeks(weeks)
-      setWeeks(newWeeks)
+      newWeeks(weeks)
     }
   }
 
+  function newWeeks(weeks) {
+    const newWeeks = getWeeks(weeks)
+    get(newWeeks)
+    setWeeks(newWeeks)
+  }
 
   return (
     <div className={"calendar-block" + (loading? " hidden": "")}>
@@ -304,8 +309,8 @@ function Calendar (props) {
         </div>
       </div>
     </div>
-    )
-  }
+  )
+}
 
 
 Calendar.propTypes = propTypes
