@@ -1,3 +1,7 @@
+[![npm](https://img.shields.io/npm/v/react-pick-calendar.svg)](https://www.npmjs.com/package/react-pick-calendar)
+
+# react-pick-calendar
+
 A scrollable calendar with no division into months for React App.
 
 Allows you to select dates and view information about dates
