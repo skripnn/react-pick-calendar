@@ -17,62 +17,69 @@ import MonthText from "./MonthText";
 import Days from "./Days";
 import Day from "./Day";
 
-
 let getTimeOut
-let loading = true
-const weeksOffset = 15
-const scrollOffset = weekWidth(weeksOffset)
 
 function Calendar (props) {
   // React.component - Календарь
   const ref = useRef()
+  const weeksOffset = 15  // количество недель за пределами видимого блока в каждую сторону
+  const scrollOffset = weekWidth(weeksOffset)  // значение scrollLeft, позволяющее скрыть weeksOffset за пределы блока
 
-  const [startOffset, setStartOffset] = useState(props.offset)
-  const [init, setInit] = useState(props.init)
-  const [content, setContent] = useState({
+  const [state, setState] = useState({
+    weeks: <span style={{width: window.innerWidth + scrollOffset}} key={'temp'}/>,
+    texts: {},
+
     days: props.init? props.init.days || {} : {},
-    daysOff: props.init? sortSet(props.init.daysOff): new Set(),
-    daysPick: props.init? sortSet(props.init.daysPick): new Set()
+    daysOff: sortSet(props.init? props.init.daysOff : []),
+    daysPick: sortSet(props.init? props.init.daysPick : []),
+
+    init: props.init,
+
+    offset: props.offset,
+    loading: true,
+    check: 0
   })
-  const [weeks, setWeeks] = useState([<span style={{width: window.innerWidth + scrollOffset}} key={'temp'}/>])
-  const [texts, setTexts] = useState({})
 
   // eslint-disable-next-line
   useEffect(firstRender, [])
   // eslint-disable-next-line
-  useEffect(refresh, [content])
-  // eslint-disable-next-line
-  useEffect(fromProps, [props])
+  useEffect(refreshWeeks, [state.days, state.daysOff, state.daysPick, state.check, props.edit])
+  useEffect(fromPropsToInit, [props.init])
+  useEffect(fromPropsToOffset, [props.offset])
 
   function firstRender() {
     ref.current.addEventListener('wheel', e => wheelScroll(e), {passive: false})
     ref.current.addEventListener('touchstart', e => DeltaTouchX.start(e))
     ref.current.addEventListener('touchmove', e => DeltaTouchX.move(e, touchScroll))
     ref.current.addEventListener('touchend', e => DeltaTouchX.end(e, touchScroll))
+    window.addEventListener('resize', () => updateState({check: new Date().getTime()}))
 
-    window.onresize = () => refresh()
-
-    const newWeeks = getWeeks()
-    get(newWeeks, 0)
-    setTexts(getTexts(newWeeks))
-    setWeeks(newWeeks)
-    loading = false
+    newWeeks(undefined, true, 0)
+    updateState({loading: false})
   }
 
-  function fromProps() {
-    // запись props.init в init
-    if (props.init !== init) {
-      setInit(props.init)
-      setContent({
-        days: props.init.days || content.days,
-        daysOff: props.init.daysOff? sortSet(props.init.daysOff) : content.daysOff,
-        daysPick: props.init.daysPick? sortSet(props.init.daysPick) : content.daysPick
-      })
+  function updateState(obj) {
+    // обновление state
+    setState(prevState => ({
+      ...prevState,
+      ...obj
+    }))
+  }
+
+  function fromPropsToInit() {
+    // обновление при смене props.init
+    if (props.init) {
+      let init = {}
+      if (props.init.days) init.days = props.init.days
+      if (props.init.daysOff) init.daysOff = sortSet(props.init.daysOff)
+      if (props.init.daysPick) init.daysPick = sortSet(props.init.daysPick)
+      updateState(init)
     }
-    if (props.offset !== startOffset) {
-      setStartOffset(props.offset)
-    }
-    refresh()
+  }
+
+  function fromPropsToOffset() {
+    // обновление при смене props.offset
+    updateState({offset: props.offset})
   }
 
   function getWeeks(prevWeeks) {
@@ -83,7 +90,7 @@ function Calendar (props) {
 
     // 1 - получаем стартовую дату
     let start = newDate().monday()
-    if (startOffset && content.daysPick.size > 0) start = newDate([...content.daysPick][0]).monday()
+    if (state.offset && state.daysPick.size > 0) start = newDate([...state.daysPick][0]).monday()
     if (prevWeeks) start = newDate(prevWeeks[0].key)
 
     let leftDate = newDate(start)
@@ -129,7 +136,7 @@ function Calendar (props) {
     return weeks
   }
 
-  function getTexts(newWeeks=weeks) {
+  function getTexts(newWeeks=state.weeks) {
     // получение новых текстовых компонентов
     let years = []
     let months = []
@@ -212,9 +219,9 @@ function Calendar (props) {
       let date = newDate(start).offsetDays(i)
       const fDate = date.format()
       const day = {
-        info: content.days[fDate] || null,
-        off: content.daysOff.has(fDate),
-        pick: content.daysPick.has(fDate)
+        info: state.days[fDate] || null,
+        off: state.daysOff.has(fDate),
+        pick: state.daysPick.has(fDate)
       }
       if ((props.startDate && fDate < props.startDate) || (props.endDate && fDate > props.endDate)) daysList.push(<div className={'calendar-day hidden'} key={fDate}/>)
       else daysList.push(<Day date={date} key={fDate} {...day} onClick={onDayClick} onMouseOver={props.dayOver}/>)
@@ -231,41 +238,41 @@ function Calendar (props) {
   function onDayClick(dateStr) {
     // Нажатие на день
     if (!props.edit) return
-    let set = new Set(content.daysPick)
+    let set = new Set(state.daysPick)
     set.has(dateStr)? set.delete(dateStr) : set.add(dateStr)
     set = sortSet(set)
-    setContent(prevState => ({...prevState, daysPick: set}))
+    updateState({
+      daysPick: set
+    })
     props.onChange([...set])
   }
 
   function get(weeks, timeout=500) {
     // GET
-    if (props.get) {
-      clearTimeout(getTimeOut)
-      const start = newDate(weeks[0].key)
-      const end = newDate(start).offsetWeeks(weeks.length).offsetDays(-1)
-      getTimeOut = setTimeout(() => {
-        props.get(start, end).then(result => {
-          setContent({
-            days: result.days ? {...content.days, ...result.days} : content.days,
-            daysOff: result.daysOff ? sortSet([...content.daysOff, ...result.daysOff]) : content.daysOff,
-            daysPick: result.daysPick ? sortSet([...content.daysPick, ...result.daysPick]) : content.daysPick
-          })
-        })
-      }, timeout)
-    }
+    clearTimeout(getTimeOut)
+    const start = newDate(weeks[0].key)
+    const end = newDate(start).offsetWeeks(weeks.length).offsetDays(-1)
+    getTimeOut = setTimeout(() => {
+      props.get(start, end).then(result => setState(prevState => ({
+        ...prevState,
+        days: result.days ? {...prevState.days, ...result.days} : prevState.days,
+        daysOff: result.daysOff ? sortSet([...prevState.daysOff, ...result.daysOff]) : prevState.daysOff,
+        daysPick: result.daysPick ? sortSet([...prevState.daysPick, ...result.daysPick]) : prevState.daysPick
+      })))
+    }, timeout)
   }
 
   function reset() {
-    // reset state
-    newWeeks()
-    if (props.offset) setStartOffset(!startOffset)
+    // нажатие на ButtonScroll - reset state
+    newWeeks(undefined, true)
+    if (props.offset) setState(prevState => ({...prevState, offset: !prevState.offset}))
   }
 
-  function refresh() {
+  function refreshWeeks() {
     // обновление недель
-    setWeeks(prevWeeks => getWeeks(prevWeeks))
+    setState(prevState => ({...prevState, weeks: getWeeks(prevState.weeks)}))
   }
+
 
   function wheelScroll(e) {
     // обработчик прокрутки колёсиком мыши
@@ -281,31 +288,38 @@ function Calendar (props) {
 
   function onScroll() {
     // реакция на скролл
-    setTexts(getTexts())
     if (ref.current.scrollLeft === 0 || ref.current.scrollLeft >= scrollOffset * 2) {
-      newWeeks(weeks)
+      newWeeks(state.weeks, true)
+    }
+    else {
+      updateState({
+        texts: getTexts()
+      })
     }
   }
 
-  function newWeeks(weeks) {
+  function newWeeks(weeks, download=false, timeout) {
     const newWeeks = getWeeks(weeks)
-    get(newWeeks)
-    setWeeks(newWeeks)
+    if (download && props.get) get(newWeeks, timeout)
+    updateState({
+      texts: getTexts(newWeeks),
+      weeks: newWeeks
+    })
   }
 
   return (
-    <div className={"calendar-block" + (loading? " hidden": "")}>
+    <div className={"calendar-block" + (state.loading? " hidden": "")}>
       <div className="calendar-left">
         <ButtonScroll onClick={reset}/>
         <DaysNames/>
       </div>
       <div className="calendar-right">
-        <TextLine children={texts.years}/>
-        <TextLine children={texts.months}/>
+        <TextLine children={state.texts.years}/>
+        <TextLine children={state.texts.months}/>
         <div className="calendar-scroll"
              onScroll={onScroll}
              ref={ref}>
-          <Days children={weeks}/>
+          <Days children={state.weeks}/>
         </div>
       </div>
     </div>
