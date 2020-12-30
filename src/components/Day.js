@@ -3,6 +3,9 @@ import React from "react";
 
 function Day(props) {
   // React.component - день
+  let touch = false
+  let touchTimer
+
   function getDayCSS() {
     // Формирование css-класса дня из даты
     let result = "calendar-day"
@@ -14,16 +17,42 @@ function Day(props) {
     return result
   }
 
+  function touchFalse () {
+    touch = false
+    clearTimeout(touchTimer)
+  }
+
+  function touchEnd(e) {
+    if (touch) {
+      touchFalse()
+      e.preventDefault()
+      onClick()
+    }
+  }
+
+  function touchStart() {
+    touch = true
+    clearTimeout(touchTimer)
+    touchTimer = setTimeout(onMouseOver, 500)
+  }
+
   function onClick() {
-    props.onClick(props.date.format())
+    if (props.onClick) props.onClick(props.date.format())
   }
 
   function onMouseOver() {
+    touchFalse()
     if (props.onMouseOver) props.onMouseOver(props.info, props.date)
   }
 
   return (
-    <div className={getDayCSS()} onClick={onClick} onMouseOver={onMouseOver}>
+    <div className={getDayCSS()}
+         onClick={onClick}
+         onMouseOver={onMouseOver}
+         onTouchEnd={touchEnd}
+         onTouchStart={touchStart}
+         onTouchMove={touchFalse}
+         onTouchCancel={touchFalse}>
       {props.date.getDate().toString()}
     </div>
   )
