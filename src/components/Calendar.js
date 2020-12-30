@@ -29,21 +29,22 @@ function Calendar (props) {
     weeks: <span style={{width: window.innerWidth + scrollOffset}} key={'temp'}/>,
     texts: {},
 
-    days: props.init? props.init.days || {} : {},
-    daysOff: sortSet(props.init? props.init.daysOff : []),
-    daysPick: sortSet(props.init? props.init.daysPick : []),
-
     init: props.init,
 
     offset: props.offset,
     loading: true,
     check: 0
   })
+  const [content, setContent] = useState({
+    days: props.init? props.init.days || {} : {},
+    daysOff: sortSet(props.init? props.init.daysOff : []),
+    daysPick: sortSet(props.init? props.init.daysPick : []),
+  })
 
   // eslint-disable-next-line
   useEffect(firstRender, [])
   // eslint-disable-next-line
-  useEffect(refreshWeeks, [state.days, state.daysOff, state.daysPick, state.check, props.edit])
+  useEffect(refreshWeeks, [content.days, content.daysOff, content.daysPick, state.check, props.edit])
   useEffect(fromPropsToInit, [props.init])
   useEffect(fromPropsToOffset, [props.offset])
 
@@ -90,7 +91,7 @@ function Calendar (props) {
 
     // 1 - получаем стартовую дату
     let start = newDate().monday()
-    if (state.offset && state.daysPick.size > 0) start = newDate([...state.daysPick][0]).monday()
+    if (state.offset && content.daysPick.size > 0) start = newDate([...content.daysPick][0]).monday()
     if (prevWeeks) start = newDate(prevWeeks[0].key)
 
     let leftDate = newDate(start)
@@ -219,9 +220,9 @@ function Calendar (props) {
       let date = newDate(start).offsetDays(i)
       const fDate = date.format()
       const day = {
-        info: state.days[fDate] || null,
-        off: state.daysOff.has(fDate),
-        pick: state.daysPick.has(fDate)
+        info: content.days[fDate] || null,
+        off: content.daysOff.has(fDate),
+        pick: content.daysPick.has(fDate)
       }
       if ((props.startDate && fDate < props.startDate) || (props.endDate && fDate > props.endDate)) daysList.push(<div className={'calendar-day hidden'} key={fDate}/>)
       else daysList.push(<Day date={date} key={fDate} {...day} onClick={onDayClick} onMouseOver={props.dayOver}/>)
@@ -238,12 +239,10 @@ function Calendar (props) {
   function onDayClick(dateStr) {
     // Нажатие на день
     if (!props.edit) return
-    let set = new Set(state.daysPick)
+    let set = new Set(content.daysPick)
     set.has(dateStr)? set.delete(dateStr) : set.add(dateStr)
     set = sortSet(set)
-    updateState({
-      daysPick: set
-    })
+    setContent(prevState => ({...prevState, daysPick: set}))
     props.onChange([...set])
   }
 
@@ -253,7 +252,7 @@ function Calendar (props) {
     const start = newDate(weeks[0].key)
     const end = newDate(start).offsetWeeks(weeks.length).offsetDays(-1)
     getTimeOut = setTimeout(() => {
-      props.get(start, end).then(result => setState(prevState => ({
+      props.get(start, end).then(result => setContent(prevState => ({
         ...prevState,
         days: result.days ? {...prevState.days, ...result.days} : prevState.days,
         daysOff: result.daysOff ? sortSet([...prevState.daysOff, ...result.daysOff]) : prevState.daysOff,
