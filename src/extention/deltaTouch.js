@@ -23,6 +23,7 @@ class DeltaTouchClass {
       this.lastDelta = null
       return
     }
+    e.preventDefault()
     this.lastTouch = this.eXY(e)
   }
 
