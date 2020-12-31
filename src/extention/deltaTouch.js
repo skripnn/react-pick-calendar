@@ -1,4 +1,4 @@
-class DeltaTouchClass {
+export default class DeltaTouchClass {
   x = true
   y = true
   touchDeltas = []
@@ -68,7 +68,4 @@ class DeltaTouchClass {
       this.lastDelta = null
     }
   }
-
 }
-
-export const DeltaTouchX = new DeltaTouchClass('x')

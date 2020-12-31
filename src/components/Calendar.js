@@ -7,7 +7,7 @@ import {getMonth, newDate} from "../extention/date";
 import sortSet from "../extention/sortSet";
 import weeksCounter from "../extention/weeksCounter";
 import weekWidth from "../extention/weekWidth";
-import { DeltaTouchX } from "../extention/deltaTouch";
+import DeltaTouchClass from "../extention/deltaTouch";
 
 import ButtonScroll from "./ButtonScroll";
 import DaysNames from "./DaysNames";
@@ -18,10 +18,11 @@ import Days from "./Days";
 import Day from "./Day";
 
 let getTimeOut
+let DeltaTouchX
 
 function Calendar (props) {
   // React.component - Календарь
-  const ref = useRef()
+  let ref = useRef(null)
   const weeksOffset = 15  // количество недель за пределами видимого блока в каждую сторону
   const scrollOffset = weekWidth(weeksOffset)  // значение scrollLeft, позволяющее скрыть weeksOffset за пределы блока
 
@@ -49,6 +50,7 @@ function Calendar (props) {
   useEffect(fromPropsToOffset, [props.offset])
 
   function firstRender() {
+    DeltaTouchX = new DeltaTouchClass('x')
     ref.current.addEventListener('wheel', e => wheelScroll(e), {passive: false})
     ref.current.addEventListener('touchstart', e => DeltaTouchX.start(e))
     ref.current.addEventListener('touchmove', e => DeltaTouchX.move(e, touchScroll))
@@ -282,6 +284,7 @@ function Calendar (props) {
 
   function touchScroll(delta) {
     // обработчик прокрутки пррикосновением
+    if (!ref.current) return
     ref.current.scrollLeft += delta
   }
 
