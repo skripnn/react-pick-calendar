@@ -49,11 +49,11 @@ Use by adding `<Calendar/>`
 | name | type | default | description |
 | ------------- | ----------- | ----------- | ----------- |
 | `edit` | bool | *false* | *true* allow to edit `daysPick`|
-| `offset` | bool | *true* | *true* displays the calendar from the first date in `daysPick`, if exist|
+| `noOffset` | bool | *false* | *true* cancel displays the calendar from the first date in `daysPick`, if exist|
 | `init` | obj |  | `Calendar object`. Allows you to initialize or update the content. When the property is updated, it replaces the existing one inside the component|
 | `get` | func |  | Lazy loading async function that to receives a content from the backend. It gets the Date objects - start and end. Should return a `Calendar object`|
-| `onChange` | func |  | A function that receives a changed `daysPick`|
-| `dayOver` | func |  | A function that receives information from the day when you hover over it|
+| `onChange` | func | () => {} | A function that receives a changed `daysPick` and the Date object which was change|
+| `onDay` | obj | {} | An object with functions that provide to each Day: onMouseOver, onContextMenu, onTouchHold. Each function receives Day's information and the Date object.|
 | `startDate` | str |  | `fDate`, the calendar first date. Otherwise infinite scrolling to past|
 | `endDate` | str |  | `fDate`, the calendar last date. Otherwise infinite scrolling to future|
 
