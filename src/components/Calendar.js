@@ -85,7 +85,7 @@ function Calendar (props) {
 
   function getWeeks(prevWeeks) {
     // получение новых недель
-    let weeksCount = weeksCounter(ref.current.getBoundingClientRect().width)  // сколько недель влезает в блок
+    let weeksCount = weeksCounter(ref.current.clientWidth)  // сколько недель влезает в блок
     const startDate = props.startDate? newDate(props.startDate).monday() : null  // левая граница
     const endDate = props.endDate? newDate(props.endDate).monday().offsetDays(7) : null  // правая граница
 
@@ -97,7 +97,7 @@ function Calendar (props) {
     let leftDate = newDate(start)
     if (!prevWeeks) leftDate.offsetWeeks(-weeksOffset)
     else if (ref.current.scrollLeft === 0) leftDate.offsetWeeks(-weeksOffset)  // влево
-    else if (ref.current.scrollLeft >= scrollOffset * 2) leftDate.offsetWeeks(weeksOffset)  // или вправо
+    else if (ref.current.scrollLeft === ref.current.scrollWidth - ref.current.clientWidth) leftDate.offsetWeeks(weeksOffset)  // или вправо
 
     // 3 - обрабатывыаем новую стартовую дату
     if (startDate && leftDate < startDate) leftDate = newDate(startDate)  // если стартовая дата раньше левой границы - сдвигаем стартовую дату до границы
@@ -145,7 +145,7 @@ function Calendar (props) {
     let tempMonth = {}
     let textWidth = 0
 
-    let mainWidth = ref.current.getBoundingClientRect().width
+    let mainWidth = ref.current.clientWidth
     let scrollLeft = ref.current.scrollLeft
     let wCount = weeksCounter(mainWidth)
     if (newWeeks && weekWidth(newWeeks.length) < mainWidth) mainWidth = weekWidth(newWeeks.length)
@@ -289,7 +289,7 @@ function Calendar (props) {
 
   function onScroll() {
     // реакция на скролл
-    if (ref.current.scrollLeft === 0 || ref.current.scrollLeft >= scrollOffset * 2) {
+    if (ref.current.scrollLeft === 0 || ref.current.scrollLeft === ref.current.scrollWidth - ref.current.clientWidth) {
       newWeeks(state.weeks, true)
     }
     else {
