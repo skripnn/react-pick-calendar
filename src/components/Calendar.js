@@ -3,6 +3,7 @@ import React, {useEffect, useRef, useState} from "react";
 import {propTypes, defaultProps} from '../extention/propTypes'
 import '../extention/Calendar.css'
 import "../extention/date"
+import "../extention/array"
 import {getMonth, newDate} from "../extention/date";
 import sortSet from "../extention/sortSet";
 import weeksCounter from "../extention/weeksCounter";
@@ -34,11 +35,16 @@ function Calendar (props) {
     loading: true,
     check: 0
   })
-  const [content, setContent] = useState({
+
+  let [content, setContent] = useState({
     days: props.init? props.init.days || {} : {},
     daysOff: sortSet(props.init? props.init.daysOff : []),
     daysPick: sortSet(props.init? props.init.daysPick : []),
   })
+  if (!props.init && props.content && props.setContent) {
+    content = props.content
+    setContent = props.setContent
+  }
 
   // eslint-disable-next-line
   useEffect(firstRender, [])
@@ -69,7 +75,7 @@ function Calendar (props) {
 
   function fromPropsInit() {
     // обновление при смене props.init
-    if (props.init) {
+    if (props.init && !props.content && !props.setContent) {
       let init = {}
       if (props.init.days) init.days = props.init.days
       if (props.init.daysOff) init.daysOff = sortSet(props.init.daysOff)
@@ -247,18 +253,22 @@ function Calendar (props) {
     props.onChange([...set], date)
   }
 
+  function updateContent(result) {
+    setContent(prevState => ({
+      ...prevState,
+      days: result.days ? {...prevState.days, ...result.days} : prevState.days,
+      daysOff: result.daysOff ? sortSet([...prevState.daysOff, ...result.daysOff]) : prevState.daysOff,
+      daysPick: result.daysPick ? sortSet([...prevState.daysPick, ...result.daysPick]) : prevState.daysPick
+    }))
+  }
+
   function get(weeks, timeout=500) {
     // GET
     clearTimeout(getTimeOut)
     const start = newDate(weeks[0].key)
     const end = newDate(start).offsetWeeks(weeks.length).offsetDays(-1)
     getTimeOut = setTimeout(() => {
-      props.get(start, end).then(result => setContent(prevState => ({
-        ...prevState,
-        days: result.days ? {...prevState.days, ...result.days} : prevState.days,
-        daysOff: result.daysOff ? sortSet([...prevState.daysOff, ...result.daysOff]) : prevState.daysOff,
-        daysPick: result.daysPick ? sortSet([...prevState.daysPick, ...result.daysPick]) : prevState.daysPick
-      })))
+      props.get(start, end).then(updateContent).then(refreshWeeks)
     }, timeout)
   }
 

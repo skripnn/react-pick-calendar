@@ -1,6 +1,6 @@
 {
   "name": "react-pick-calendar",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "A scrollable calendar with no division into months for React App",
   "main": "./lib/index.js",
   "keywords": [],
