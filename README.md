@@ -83,6 +83,7 @@ It is working like setState(prevState => {}) from React.useState hook.
 Example with React.useState hook:
 
     import React from "react";
+    import Calendar from 'react-pick-calendar';
 
     function MyComponent() {
         const [state, setState] = React.useState({
@@ -100,6 +101,7 @@ Example with MobX:
     import ReactDOM from "react-dom";
     import { makeAutoObservable } from "mobx";
     import { observer } from "mobx-react-lite";
+    import Calendar from 'react-pick-calendar';
 
     class Store {
         state = {
@@ -118,6 +120,5 @@ Example with MobX:
     }
 
     const calendarStore = new Store();
-    const CalendarView = observer(({ store }) => <Calendar content={store.state} setContent={store.setState} />);
-
-    ReactDOM.render(<CalendarView store={calendarStore} />, document.body);
+    const CalendarView = observer(({ store }) => <Calendar content={store.state} setContent={(func) => store.setState(func)} />);
+    ReactDOM.render(<CalendarView store={calendarStore} />, document.getElementById('root');
