@@ -1,18 +1,19 @@
-import {newDate} from "../extention/date";
-import React from "react";
+import {newDate} from "../../extention/date";
+import "./Day.css"
+import React, {useRef} from "react";
 
 function Day(props) {
   // React.component - день
   let touch = false
   let touchTimer
+  const ref = useRef()
 
   function getDayCSS() {
     // Формирование css-класса дня из даты
     let result = "calendar-day"
     result += props.date.getMonth() % 2 === 0 ? " color0" : " color1"
     if (props.date < newDate()) result += " past"
-    if (props.info) result += " busy"
-    else if (props.off) result += " busy"
+    if (props.info || props.off) result += " busy"
     if (props.pick) result += " pick"
     return result
   }
@@ -33,7 +34,7 @@ function Day(props) {
   function touchStart() {
     touch = true
     clearTimeout(touchTimer)
-    touchTimer = setTimeout(onTouchHold, 500)
+    touchTimer = setTimeout(() => onTouchHold(), 500)
   }
 
   function onClick() {
@@ -42,20 +43,21 @@ function Day(props) {
 
   function onTouchHold() {
     touchFalse()
-    if (props.onTouchHold) props.onTouchHold(props.info, props.date)
+    if (props.onTouchHold) props.onTouchHold(ref.current, props.info, props.date, props.off)
   }
 
   function onMouseOver() {
-    if (props.onMouseOver) props.onMouseOver(props.info, props.date)
+    if (props.onMouseOver) props.onMouseOver(ref.current, props.info, props.date, props.off)
   }
 
   function onContextMenu(e) {
     e.preventDefault()
-    if (props.onContextMenu) props.onContextMenu(props.info, props.date)
+    if (props.onContextMenu) props.onContextMenu(ref.current, props.info, props.date, props.off)
   }
 
   return (
     <div
+      ref={ref}
       className={getDayCSS()}
       onClick={onClick}
       onContextMenu={onContextMenu}
