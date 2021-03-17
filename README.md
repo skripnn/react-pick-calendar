@@ -10,10 +10,10 @@ Allows you to select dates and view information about dates
 
 Install by executing `npm i react-pick-calendar`
 
-Import by adding `import Calendar from 'react-pick-calendar';` 
+Import by adding `import Calendar from 'react-pick-calendar';`
 
 Use by adding `<Calendar/>`
-    
+
 
 ## terms
 
@@ -33,7 +33,7 @@ Use by adding `<Calendar/>`
 ###### *day becomes `pick`*
 
 **`Calendar object`** - Object, the expected properties: `days`, `daysOff`, `daysPick`
-    
+
     const calendarObject = {
         days: {
             fDate: Any,
@@ -72,29 +72,28 @@ A function that receives variables after every handle change daysPick:
 
 ## onDay
 
-An object with functions that provide to each Day: 
+An object with functions that provide to each Day:
 - onMouseOver
 - onContextMenu
 - onTouchHold (combine of touchEvents)
-  
+
 Each function receives variables from Day component:
 - DOM element
 - Day's information - value form `calendarObject.days[fDate]`
 - date: Date object
 - dayOff: bool - `true` if `calendarObject.daysOff` includes this Day
 
+Only defined functions will be executed.
 
     function yourFunction(element, info, date, dayOff) {
         // your code
-    }
+    };
     
     const onDay = {
         onMouseOver: action,
         onContextMenu: action,
         onTouchHold: action
-    }
-
-Only defined functions will be executed.
+    };
 
 
 ## external Store
