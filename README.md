@@ -51,19 +51,55 @@ Use by adding `<Calendar/>`
 | ------------- | ----------- | ----------- | ----------- |
 | `edit` | bool | *false* | *true* allow to edit `daysPick`|
 | `noOffset` | bool | *false* | *true* cancel displaying the calendar from the first date in `daysPick`, if exist|
-| `init` | obj |  | `Calendar object`. Allows you to initialize or update the content. When the property is updated, it replaces the existing one inside the component. Cancel `content` and `setContent` props|
-| `content` | obj |  | [external Store](#external-store). Doesn't work with `init` prop|
-| `setContent` | func |  | [external Dispatch](#external-store). Doesn't work with `init` prop|
 | `get` | func |  | Lazy loading async function that to receives a content from the backend. It gets the Date objects - start and end. Should return a `Calendar object`|
-| `onChange` | func | () => {} | A function that receives a changed `daysPick` and the Date object which was change|
+| `onChange` | func | (daysPick, changedDays, pick) => {} | [A function after daysPick handle change](#onchange)|
 | `onDay` | obj | {} | An object with functions that provide to each Day: onMouseOver, onContextMenu, onTouchHold. Each function receives Day's information and the Date object.|
+| `content` | obj |  | [external Store](#external-store)|
+| `setContent` | func |  | [external Dispatch](#external-store)|
+| `triggerGet` | any |  | Trigger starting Get-function hook|
+| `triggerNew` | any |  | Trigger starting rerender hook|
 | `startDate` | str |  | `fDate`, the calendar first date. Otherwise infinite scrolling to past|
 | `endDate` | str |  | `fDate`, the calendar last date. Otherwise infinite scrolling to future|
+
+
+## onChange
+
+A function that receives variables after every handle change daysPick:
+- daysPick: [`fDate`, `fDate`, ...] - new daysPick property of `Calendar object`
+- changedDays: [`fDate`, `fDate`, ...] - array of changed dates
+- pick: bool - if `true`, changed days became pick, if `false` - otherwise
+
+
+## onDay
+
+An object with functions that provide to each Day: 
+- onMouseOver
+- onContextMenu
+- onTouchHold (combine of touchEvents)
+  
+Each function receives variables from Day component:
+- DOM element
+- Day's information - value form `calendarObject.days[fDate]`
+- date: Date object
+- dayOff: bool - `true` if `calendarObject.daysOff` includes this Day
+
+
+    function yourFunction(element, info, date, dayOff) {
+        // your code
+    }
+    
+    const onDay = {
+        onMouseOver: action,
+        onContextMenu: action,
+        onTouchHold: action
+    }
+
+Only defined functions will be executed.
+
 
 ## external Store
 
 You can convert this component to uncontrolled and use any external store.
-For that add props `content` and `setContent` and don't use the `init` prop.
 
 `content` - store with `Calendar object` where each Array replaced by Set:
 
@@ -76,6 +112,8 @@ For that add props `content` and `setContent` and don't use the `init` prop.
         daysOff: new Set([fDate, fDate, ...]),
         daysPick: new Set([fDate, fDate, ...])
     };
+
+If `setContent` is undefined, `content` is the initial state for internal storage
 
 `setContent` - dispatch, that receives a function that convert previous `content` to new `content`.
 It is working like setState(prevState => {}) from React.useState hook.

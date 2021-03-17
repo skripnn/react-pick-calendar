@@ -10,13 +10,19 @@ export const propTypes = {
   // отмена рассчета календаря от началльной даты в daysPick
   noOffset: PropTypes.bool,
   // начальные значения - если есть, то к пустым значениям прибавляются те, что есть в init
-  init: PropTypes.object,
+  content: PropTypes.object,
+  // функция для обновления внешнего хранилища
+  setContent: PropTypes.func,
   // функции активности Day, которым передаётся информация о дне
   onDay: PropTypes.shape({
     onTouchHold: PropTypes.func,
     onMouseOver: PropTypes.func,
     onContextMenu: PropTypes.func
   }),
+  // триггер хука выполнения запроса
+  triggerGet: PropTypes.any,
+  //триггер хука обновления
+  triggerNew: PropTypes.any,
   // начало календаря (не скроллится раньше этой даты)
   startDate: (props, propName, componentName) => checkDateFormat(props, propName, componentName),
   // конец календаря (не скроллится дальше этой даты)
@@ -27,7 +33,8 @@ export const defaultProps = {
   onChange: () => {},
   onDay: {},
   edit: false,
-  noOffset: false
+  noOffset: false,
+  content: {}
 }
 
 function checkDateFormat(props, propName, componentName) {

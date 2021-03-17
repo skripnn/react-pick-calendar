@@ -3,8 +3,7 @@ import React, {useEffect, useRef, useState} from "react";
 import {propTypes, defaultProps} from '../extention/propTypes'
 import '../extention/Calendar.css'
 import "../extention/date"
-import "../extention/array"
-import {getMonth, newDate} from "../extention/date";
+import {getMonth, newDate, dateRange} from "../extention/date";
 import sortSet from "../extention/sortSet";
 import weeksCounter from "../extention/weeksCounter";
 import weekWidth from "../extention/weekWidth";
@@ -16,7 +15,7 @@ import TextLine from "./TextLine";
 import YearText from "./YearText";
 import MonthText from "./MonthText";
 import Days from "./Days";
-import Day from "./Day";
+import Day from "./Day/Day";
 
 let getTimeOut
 let DeltaTouchX
@@ -33,25 +32,26 @@ function Calendar (props) {
 
     offset: !props.noOffset,
     loading: true,
-    check: 0
+    check: 0,
+    lastDay: null,
+    shift: false
   })
-
   let [content, setContent] = useState({
-    days: props.init? props.init.days || {} : {},
-    daysOff: sortSet(props.init? props.init.daysOff : []),
-    daysPick: sortSet(props.init? props.init.daysPick : []),
+    days: props.content ? props.content.days || {} : {},
+    daysOff: sortSet(props.content ? props.content.daysOff : []),
+    daysPick: sortSet(props.content ? props.content.daysPick : []),
   })
-  if (!props.init && props.content && props.setContent) {
-    content = props.content
-    setContent = props.setContent
-  }
-
   // eslint-disable-next-line
   useEffect(firstRender, [])
   // eslint-disable-next-line
-  useEffect(refreshWeeks, [content.days, content.daysOff, content.daysPick, state.check, props.edit, props.onDay])
-  useEffect(fromPropsInit, [props.init])
+  useEffect(refreshWeeks, [content.days, content.daysOff, content.daysPick, state.check, props.edit, props.onDay, state.shift])
+  // eslint-disable-next-line
+  useEffect(fromPropsToContent, [props.content.days, props.content.daysOff, props.content.daysPick])
   useEffect(fromPropsOffset, [props.noOffset])
+  // eslint-disable-next-line
+  useEffect(() => newWeeks(undefined, true, 0), [props.triggerNew])
+  // eslint-disable-next-line
+  useEffect(() => get(state.weeks, 0), [props.triggerGet])
 
   function firstRender() {
     DeltaTouchX = new DeltaTouchClass('x')
@@ -60,6 +60,8 @@ function Calendar (props) {
     ref.current.addEventListener('touchmove', e => DeltaTouchX.move(e, touchScroll))
     ref.current.addEventListener('touchend', e => DeltaTouchX.end(e, touchScroll))
     window.addEventListener('resize', () => updateState({check: new Date().getTime()}))
+    window.addEventListener('keydown', (e) => {if (e.key === 'Shift') updateState({shift: true})})
+    window.addEventListener('keyup', (e) => {if (e.key === 'Shift') updateState({shift: false})})
 
     newWeeks(undefined, true, 0)
     updateState({loading: false})
@@ -73,16 +75,18 @@ function Calendar (props) {
     }))
   }
 
-  function fromPropsInit() {
-    // обновление при смене props.init
-    if (props.init && !props.content && !props.setContent) {
-      let init = {}
-      if (props.init.days) init.days = props.init.days
-      if (props.init.daysOff) init.daysOff = sortSet(props.init.daysOff)
-      if (props.init.daysPick) init.daysPick = sortSet(props.init.daysPick)
-      setContent(prevState => ({...prevState, ...init}))
+  function fromPropsToContent() {
+    // обновление при смене props.content
+    if (props.content && props.setContent) {
+      setContent({
+        days: props.content.days || content.days,
+        daysOff: sortSet(props.content.daysOff || content.daysOff),
+        daysPick: sortSet(props.content.daysPick || content.daysPick),
+      })
     }
   }
+
+
 
   function fromPropsOffset() {
     // обновление при смене props.noOffset
@@ -167,7 +171,7 @@ function Calendar (props) {
     for (let i = 0; i < wCount; i++) {
       let date = newDate(start).offsetWeeks(i)
       if (textWidth < mainWidth) {
-        let width = 24
+        let width = weekWidth()
         if (i === 0) {
           width -= offset
         }
@@ -247,28 +251,65 @@ function Calendar (props) {
     if (!props.edit) return
     const fDate = date.format()
     let set = new Set(content.daysPick)
-    set.has(fDate)? set.delete(fDate) : set.add(fDate)
+    let pick = false
+    let array
+    if (state.lastDay && state.shift) {
+      if (set.has(state.lastDay)) pick = true
+      array = dateRange(state.lastDay, fDate).filter((day) => day !== state.lastDay)
+      for (const d of array) {
+        pick? set.add(d) : set.delete(d)
+      }
+    }
+    else {
+      if (!set.has(fDate)) pick = true
+      pick? set.add(fDate) : set.delete(fDate)
+    }
     set = sortSet(set)
-    setContent(prevState => ({...prevState, daysPick: set}))
-    props.onChange([...set], date)
+    updateState({lastDay: fDate})
+    const f = prevState => ({...prevState, daysPick: set})
+    props.setContent? props.setContent(f) : setContent(f)
+    props.onChange([...set], (array || [fDate]), pick)
   }
 
-  function updateContent(result) {
-    setContent(prevState => ({
+  function updateContent(result, start, end) {
+
+    const clearContent = (oldContent) => {
+      let content
+      if (oldContent instanceof Set) {
+        if (!oldContent.size) return oldContent
+        content = new Set(oldContent)
+      }
+      else {
+        if (!Object.keys(oldContent).length) return oldContent
+        content = JSON.parse(JSON.stringify(oldContent))
+      }
+      if (start && end) {
+        let date = newDate(start)
+        while (date.getTime() <= end.getTime()) {
+          delete content[date.format()]
+          date.offsetDays(1)
+        }
+      }
+      return content
+    }
+
+    const f = prevState => ({
       ...prevState,
-      days: result.days ? {...prevState.days, ...result.days} : prevState.days,
-      daysOff: result.daysOff ? sortSet([...prevState.daysOff, ...result.daysOff]) : prevState.daysOff,
-      daysPick: result.daysPick ? sortSet([...prevState.daysPick, ...result.daysPick]) : prevState.daysPick
-    }))
+      days: result.days ? {...clearContent(prevState.days), ...result.days} : prevState.days,
+      daysOff: result.daysOff ? sortSet([...clearContent(prevState.daysOff), ...result.daysOff]) : prevState.daysOff,
+      daysPick: result.daysPick ? sortSet([...clearContent(prevState.daysPick), ...result.daysPick]) : prevState.daysPick
+    })
+    props.setContent? props.setContent(f) : setContent(f)
   }
 
   function get(weeks, timeout=500) {
     // GET
+    if (!weeks || !weeks[0] || !weeks[0].key) return
     clearTimeout(getTimeOut)
     const start = newDate(weeks[0].key)
     const end = newDate(start).offsetWeeks(weeks.length).offsetDays(-1)
     getTimeOut = setTimeout(() => {
-      props.get(start, end).then(updateContent).then(refreshWeeks)
+      if (props.get) props.get(start, end).then((result) => updateContent(result, start, end))
     }, timeout)
   }
 
