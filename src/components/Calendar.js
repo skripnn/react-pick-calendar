@@ -18,7 +18,6 @@ import Days from "./Days";
 import Day from "./Day/Day";
 
 let getTimeOut
-let DeltaTouchX
 
 function Calendar (props) {
   // React.component - Календарь
@@ -27,16 +26,15 @@ function Calendar (props) {
   const scrollOffset = weekWidth(weeksOffset)  // значение scrollLeft, позволяющее скрыть weeksOffset за пределы блока
 
   const [state, setState] = useState({
-    weeks: <span style={{width: window.innerWidth + scrollOffset}} key={'temp'}/>,
-    texts: {},
-
     offset: !props.noOffset,
     loading: true,
     check: 0,
     lastDay: null,
     shift: false
   })
-  let [content, setContent] = useState({
+  const [weeks, setWeeks] = useState(<span style={{width: window.innerWidth + scrollOffset}} key={'temp'}/>)
+  const [texts, setTexts] = useState({})
+  const [content, setContent] = useState({
     days: props.content ? props.content.days || {} : {},
     daysOff: sortSet(props.content ? props.content.daysOff : []),
     daysPick: sortSet(props.content ? props.content.daysPick : []),
@@ -51,20 +49,80 @@ function Calendar (props) {
   // eslint-disable-next-line
   useEffect(() => newWeeks(undefined, true, 0), [props.triggerNew])
   // eslint-disable-next-line
-  useEffect(() => get(state.weeks, 0), [props.triggerGet])
+  useEffect(() => get(weeks, 0), [props.triggerGet])
+
+  const [intersection, setIntersection] = useState(false)
+  const [el, setEl] = useState(null)
+  const [observer, setObserver] = useState(null)
+  function changeIntersection(a) {
+    if (a[0].isIntersecting) setIntersection(true)
+  }
+
+  useEffect(() => {
+    if (intersection) newWeeks(weeks, true)
+    // eslint-disable-next-line
+  }, [intersection])
+
+  // eslint-disable-next-line
+  useEffect(newElement, [weeks])
+  function newElement() {
+    if (observer && el) {
+      observer.unobserve(el[0])
+      observer.unobserve(el[1])
+    }
+    setEl([
+      ref.current.firstElementChild.firstElementChild,
+      ref.current.firstElementChild.lastElementChild
+    ])
+  }
+
+  // eslint-disable-next-line
+  useEffect(setObservableTarget, [el, observer])
+  function setObservableTarget() {
+    if (observer && el) {
+      observer.observe(el[0])
+      observer.observe(el[1])
+    }
+    setIntersection(false)
+  }
+
+  // eslint-disable-next-line
+  useEffect(setObservableRoot, [ref.current])
+  function setObservableRoot() {
+    if (observer) observer.disconnect()
+    if (ref.current) setObserver(new IntersectionObserver(changeIntersection, {root: ref.current, threshold: 1.0}),)
+  }
 
   function firstRender() {
-    DeltaTouchX = new DeltaTouchClass('x')
+    const DeltaTouchX = new DeltaTouchClass('x')
     ref.current.addEventListener('wheel', e => wheelScroll(e), {passive: false})
     ref.current.addEventListener('touchstart', e => DeltaTouchX.start(e))
     ref.current.addEventListener('touchmove', e => DeltaTouchX.move(e, touchScroll))
     ref.current.addEventListener('touchend', e => DeltaTouchX.end(e, touchScroll))
     window.addEventListener('resize', () => updateState({check: new Date().getTime()}))
-    window.addEventListener('keydown', (e) => {if (e.key === 'Shift') updateState({shift: true})})
-    window.addEventListener('keyup', (e) => {if (e.key === 'Shift') updateState({shift: false})})
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Shift') updateState({shift: true})
+    })
+    window.addEventListener('keyup', (e) => {
+      if (e.key === 'Shift') updateState({shift: false})
+    })
 
     newWeeks(undefined, true, 0)
     updateState({loading: false})
+
+    return (() => {
+      window.removeEventListener('resize', () => updateState({check: new Date().getTime()}))
+      window.removeEventListener('keydown', (e) => {
+        if (e.key === 'Shift') updateState({shift: true})
+      })
+      window.removeEventListener('keyup', (e) => {
+        if (e.key === 'Shift') updateState({shift: false})
+      })
+      if (observer) {
+        if (observer[0]) observer[0].disconnect()
+        if (observer[1]) observer[1].disconnect()
+      }
+    })
   }
 
   function updateState(obj) {
@@ -87,7 +145,6 @@ function Calendar (props) {
   }
 
 
-
   function fromPropsOffset() {
     // обновление при смене props.noOffset
     updateState({offset: !props.noOffset})
@@ -96,8 +153,8 @@ function Calendar (props) {
   function getWeeks(prevWeeks) {
     // получение новых недель
     let weeksCount = weeksCounter(ref.current.clientWidth)  // сколько недель влезает в блок
-    const startDate = props.startDate? newDate(props.startDate).monday() : null  // левая граница
-    const endDate = props.endDate? newDate(props.endDate).monday().offsetDays(7) : null  // правая граница
+    const startDate = props.startDate ? newDate(props.startDate).monday() : null  // левая граница
+    const endDate = props.endDate ? newDate(props.endDate).monday().offsetDays(7) : null  // правая граница
 
     // 1 - получаем стартовую дату
     let start = newDate().monday()
@@ -147,7 +204,7 @@ function Calendar (props) {
     return weeks
   }
 
-  function getTexts(newWeeks=state.weeks) {
+  function getTexts(newWeeks = weeks) {
     // получение новых текстовых компонентов
     let years = []
     let months = []
@@ -217,10 +274,10 @@ function Calendar (props) {
     tempYear.width -= width
     years.push(<YearText key={tempYear.year} {...tempYear}/>)
 
-    return {
+    setTexts({
       years: years,
       months: months
-    }
+    })
   }
 
   function week(start) {
@@ -234,7 +291,8 @@ function Calendar (props) {
         off: content.daysOff.has(fDate),
         pick: content.daysPick.has(fDate)
       }
-      if ((props.startDate && fDate < props.startDate) || (props.endDate && fDate > props.endDate)) daysList.push(<div className={'calendar-day hidden'} key={fDate}/>)
+      if ((props.startDate && fDate < props.startDate) || (props.endDate && fDate > props.endDate)) daysList.push(<div
+        className={'calendar-day hidden'} key={fDate}/>)
       else daysList.push(<Day date={date} key={fDate} {...day} onClick={onDayClick} {...props.onDay}/>)
     }
 
@@ -257,17 +315,20 @@ function Calendar (props) {
       if (set.has(state.lastDay)) pick = true
       array = dateRange(state.lastDay, fDate).filter((day) => day !== state.lastDay)
       for (const d of array) {
-        pick? set.add(d) : set.delete(d)
+        pick ? set.add(d) : set.delete(d)
       }
-    }
-    else {
+    } else {
       if (!set.has(fDate)) pick = true
-      pick? set.add(fDate) : set.delete(fDate)
+      pick ? set.add(fDate) : set.delete(fDate)
     }
     set = sortSet(set)
+    if (props.maxPick && set.size > props.maxPick) {
+      if (props.onError) props.onError(`Select more than ${props.maxPick.toString()} days is impossible`)
+      return
+    }
     updateState({lastDay: fDate})
     const f = prevState => ({...prevState, daysPick: set})
-    props.setContent? props.setContent(f) : setContent(f)
+    props.setContent ? props.setContent(f) : setContent(f)
     props.onChange([...set], (array || [fDate]), pick)
   }
 
@@ -278,8 +339,7 @@ function Calendar (props) {
       if (oldContent instanceof Set) {
         if (!oldContent.size) return oldContent
         content = new Set(oldContent)
-      }
-      else {
+      } else {
         if (!Object.keys(oldContent).length) return oldContent
         content = JSON.parse(JSON.stringify(oldContent))
       }
@@ -299,10 +359,10 @@ function Calendar (props) {
       daysOff: result.daysOff ? sortSet([...clearContent(prevState.daysOff), ...result.daysOff]) : prevState.daysOff,
       daysPick: result.daysPick ? sortSet([...clearContent(prevState.daysPick), ...result.daysPick]) : prevState.daysPick
     })
-    props.setContent? props.setContent(f) : setContent(f)
+    props.setContent ? props.setContent(f) : setContent(f)
   }
 
-  function get(weeks, timeout=500) {
+  function get(weeks, timeout = 500) {
     // GET
     if (!weeks || !weeks[0] || !weeks[0].key) return
     clearTimeout(getTimeOut)
@@ -321,7 +381,7 @@ function Calendar (props) {
 
   function refreshWeeks() {
     // обновление недель
-    setState(prevState => ({...prevState, weeks: getWeeks(prevState.weeks)}))
+    setWeeks(prevState => getWeeks(prevState))
   }
 
 
@@ -338,25 +398,10 @@ function Calendar (props) {
     ref.current.scrollLeft += delta
   }
 
-  function onScroll() {
-    // реакция на скролл
-    if (ref.current.scrollLeft === 0 || ref.current.scrollLeft === ref.current.scrollWidth - ref.current.clientWidth) {
-      newWeeks(state.weeks, true)
-    }
-    else {
-      updateState({
-        texts: getTexts()
-      })
-    }
-  }
-
-  function newWeeks(weeks, download=false, timeout) {
+  function newWeeks(weeks, download = false, timeout) {
     const newWeeks = getWeeks(weeks)
     if (download && props.get) get(newWeeks, timeout)
-    updateState({
-      texts: getTexts(newWeeks),
-      weeks: newWeeks
-    })
+    setWeeks(newWeeks)
   }
 
   return (
@@ -366,12 +411,12 @@ function Calendar (props) {
         <DaysNames/>
       </div>
       <div className="calendar-right">
-        <TextLine children={state.texts.years}/>
-        <TextLine children={state.texts.months}/>
+        <TextLine children={texts.years}/>
+        <TextLine children={texts.months}/>
         <div className="calendar-scroll"
-             onScroll={onScroll}
+             onScroll={() => getTexts()}
              ref={ref}>
-          <Days children={state.weeks}/>
+          <Days children={weeks}/>
         </div>
       </div>
     </div>

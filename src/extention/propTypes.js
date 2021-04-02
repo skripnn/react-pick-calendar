@@ -7,6 +7,10 @@ export const propTypes = {
   onChange: PropTypes.func,
   // можно ли менять daysPick
   edit: PropTypes.bool,
+  // Максимальное количество выбранных дней
+  maxPick: PropTypes.number,
+  // функция обработки ошибок
+  onError: PropTypes.func,
   // отмена рассчета календаря от началльной даты в daysPick
   noOffset: PropTypes.bool,
   // начальные значения - если есть, то к пустым значениям прибавляются те, что есть в init
@@ -34,7 +38,8 @@ export const defaultProps = {
   onDay: {},
   edit: false,
   noOffset: false,
-  content: {}
+  content: {},
+  maxPick: 366
 }
 
 function checkDateFormat(props, propName, componentName) {

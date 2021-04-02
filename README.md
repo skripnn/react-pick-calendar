@@ -54,6 +54,8 @@ Use by adding `<Calendar/>`
 | `get` | func |  | Lazy loading async function that to receives a content from the backend. It gets the Date objects - start and end. Should return a `Calendar object`|
 | `onChange` | func | (daysPick, changedDays, pick) => {} | [A function after daysPick handle change](#onchange)|
 | `onDay` | obj | {} | An object with functions that provide to each Day: onMouseOver, onContextMenu, onTouchHold. Each function receives Day's information and the Date object.|
+| `maxPick` | number | 366 | Maximum size of `daysPick`|
+| `onError` | func |  | A function executing in any error case |
 | `content` | obj |  | [external Store](#external-store)|
 | `setContent` | func |  | [external Dispatch](#external-store)|
 | `triggerGet` | any |  | Trigger starting Get-function hook|
